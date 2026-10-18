@@ -1,0 +1,45 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --violet: #7c3aed;
+  --fuchsia: #db2777;
+  --orange: #f97316;
+}
+
+html, body { background: #faf7ff; color: #1e1b4b; }
+body {
+  background-image:
+    radial-gradient(60rem 40rem at -10% -10%, rgba(167,139,250,.18), transparent 60%),
+    radial-gradient(50rem 30rem at 110% 0%, rgba(244,114,182,.14), transparent 60%),
+    radial-gradient(50rem 30rem at 50% 120%, rgba(251,191,36,.12), transparent 60%);
+  background-attachment: fixed;
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl px-5 py-3 font-semibold transition
+           active:scale-[.98] disabled:opacity-50 disabled:pointer-events-none focus-visible:outline-none
+           focus-visible:ring-4 focus-visible:ring-violet-300;
+  }
+  .btn-primary { @apply btn text-white shadow-pop bg-gradient-to-r from-violet-600 via-fuchsia-600 to-orange-500 hover:brightness-110; }
+  .btn-soft { @apply btn bg-violet-100 text-violet-700 hover:bg-violet-200; }
+  .btn-ghost { @apply btn bg-white text-ink border border-violet-100 hover:border-violet-300 hover:bg-violet-50; }
+  .btn-danger { @apply btn bg-rose-100 text-rose-700 hover:bg-rose-200; }
+  .btn-success { @apply btn text-white bg-gradient-to-r from-emerald-500 to-teal-500 shadow-[0_10px_30px_-10px_rgba(16,185,129,.6)] hover:brightness-110; }
+  .card { @apply rounded-3xl bg-white/90 backdrop-blur border border-white shadow-card; }
+  .input {
+    @apply w-full rounded-2xl border-2 border-violet-100 bg-white px-4 py-3 text-ink placeholder:text-ink-mute
+           outline-none transition focus:border-violet-400 focus:ring-4 focus:ring-violet-100;
+  }
+  .label { @apply mb-1.5 block text-sm font-semibold text-ink-soft; }
+  .chip { @apply inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold; }
+  .gradient-text { @apply bg-gradient-to-r from-violet-600 via-fuchsia-600 to-orange-500 bg-clip-text text-transparent; }
+}
+
+/* Leaflet tweaks */
+.leaflet-container { font-family: inherit; border-radius: 1.5rem; }
+.leaflet-control-attribution { font-size: 10px; border-radius: 8px 0 0 0; }
+.gc-pin { background: transparent; border: none; }
+.leaflet-marker-icon.gc-car { transition: transform 0.9s linear; }

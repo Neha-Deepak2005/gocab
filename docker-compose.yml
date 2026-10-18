@@ -1,0 +1,59 @@
+# Full local stack: Postgres+PostGIS, Redis, FastAPI, Celery worker + beat, Next.js
+#   docker compose up --build      ->  app: http://localhost:3000   api docs: http://localhost:8000/docs
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    environment:
+      POSTGRES_USER: gocab
+      POSTGRES_PASSWORD: gocab
+      POSTGRES_DB: gocab
+    ports: ["5432:5432"]
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gocab"]
+      interval: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports: ["6379:6379"]
+
+  api:
+    build: ./backend
+    env_file: [./backend/.env.example]
+    environment: &backend_env
+      DATABASE_URL: postgresql://gocab:gocab@db:5432/gocab
+      REDIS_URL: redis://redis:6379/0
+      USE_CELERY: "true"
+      USE_POSTGIS: "true"
+      CORS_ORIGINS: http://localhost:3000
+      JWT_SECRET: local-dev-secret-change-me-0123456789
+    ports: ["8000:8000"]
+    depends_on:
+      db: { condition: service_healthy }
+      redis: { condition: service_started }
+
+  worker:
+    build: ./backend
+    env_file: [./backend/.env.example]
+    environment: *backend_env
+    command: celery -A app.tasks.celery_app worker --loglevel=info
+    depends_on: [api]
+
+  beat:
+    build: ./backend
+    env_file: [./backend/.env.example]
+    environment: *backend_env
+    command: celery -A app.tasks.celery_app beat --loglevel=info
+    depends_on: [api]
+
+  web:
+    build:
+      context: ./frontend
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:8000
+    ports: ["3000:3000"]
+    depends_on: [api]
+
+volumes:
+  pgdata:

@@ -1,0 +1,48 @@
+# Render Blueprint: New + > Blueprint > pick this repo. Creates the API + Postgres (+ optional Redis).
+# Then deploy the frontend on Vercel with NEXT_PUBLIC_API_URL = the API's URL.
+services:
+  - type: web
+    name: gocab-api
+    runtime: docker
+    rootDir: backend
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase: { name: gocab-db, property: connectionString }
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CORS_ORIGINS
+        value: https://your-app.vercel.app   # update after deploying the frontend
+      - key: DEMO_BOTS
+        value: "true"                         # simulated drivers for demos; set false for real use
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_PUBLISHABLE_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: GOOGLE_MAPS_API_KEY
+        sync: false
+      # Optional Redis (uncomment the keyvalue service below too)
+      # - key: REDIS_URL
+      #   fromService: { type: keyvalue, name: gocab-redis, property: connectionString }
+
+  # - type: keyvalue
+  #   name: gocab-redis
+  #   plan: free
+  #   ipAllowList: []
+
+  # Celery worker needs a paid "background worker" on Render. Without it, jobs run in-process.
+  # - type: worker
+  #   name: gocab-worker
+  #   runtime: docker
+  #   rootDir: backend
+  #   dockerCommand: celery -A app.tasks.celery_app worker --loglevel=info
+  #   envVars: (same as gocab-api, plus USE_CELERY=true and REDIS_URL)
+
+databases:
+  - name: gocab-db
+    plan: free
